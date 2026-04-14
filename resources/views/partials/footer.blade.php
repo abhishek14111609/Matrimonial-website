@@ -16,8 +16,6 @@
         <div>
             <h4>Explore</h4>
             <a href="{{ route('matches') }}">Browse Matches</a>
-            <a href="{{ route('success') }}">Success Stories</a>
-            <a href="{{ route('plans') }}">Membership Plans</a>
             <a href="{{ route('faq') }}">FAQs</a>
         </div>
 
@@ -25,7 +23,6 @@
             <h4>Company</h4>
             <a href="{{ route('about') }}">About Us</a>
             <a href="{{ route('contact') }}">Contact</a>
-            <a href="{{ route('blog') }}">Blog</a>
         </div>
 
         <div>

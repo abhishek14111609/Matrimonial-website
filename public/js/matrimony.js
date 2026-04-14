@@ -4,35 +4,93 @@ const notifWrap = document.getElementById('notifWrap');
 const notifToggle = document.getElementById('notifToggle');
 
 const pageLoader = document.getElementById('pageLoader');
+let navigationTimer = null;
 
-window.addEventListener('load', () => {
+const markPageReady = () => {
     document.body.classList.add('loaded');
-    document.body.classList.remove('is-loading');
+    document.body.classList.remove('is-loading', 'page-leaving');
 
     if (pageLoader) {
         pageLoader.setAttribute('aria-hidden', 'true');
     }
+};
+
+window.addEventListener('load', () => {
+    markPageReady();
 });
+
+// Fix back/forward cache restore where old transition classes can keep the page hidden.
+window.addEventListener('pageshow', () => {
+    if (navigationTimer) {
+        clearTimeout(navigationTimer);
+        navigationTimer = null;
+    }
+    markPageReady();
+});
+
+window.addEventListener('popstate', () => {
+    markPageReady();
+});
+
+window.addEventListener('hashchange', () => {
+    markPageReady();
+});
+
+window.addEventListener('pagehide', () => {
+    if (navigationTimer) {
+        clearTimeout(navigationTimer);
+        navigationTimer = null;
+    }
+});
+
+const shouldInterceptNavigation = (event, link) => {
+    if (event.defaultPrevented || event.button !== 0) {
+        return false;
+    }
+
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+        return false;
+    }
+
+    if (link.target === '_blank' || link.hasAttribute('download') || link.dataset.noTransition === 'true') {
+        return false;
+    }
+
+    const rawHref = link.getAttribute('href');
+    if (!rawHref || rawHref.startsWith('#')) {
+        return false;
+    }
+
+    const lowerHref = rawHref.toLowerCase();
+    if (lowerHref.startsWith('mailto:') || lowerHref.startsWith('tel:') || lowerHref.startsWith('javascript:')) {
+        return false;
+    }
+
+    const url = new URL(link.href, window.location.href);
+    const isExternal = url.origin !== window.location.origin;
+    const isSamePage = url.pathname === window.location.pathname && url.search === window.location.search;
+
+    return !isExternal && !isSamePage;
+};
 
 document.querySelectorAll('a[href]').forEach((link) => {
     link.addEventListener('click', (event) => {
-        const href = link.getAttribute('href');
-        if (!href || href.startsWith('#')) {
+        if (!shouldInterceptNavigation(event, link)) {
             return;
         }
 
         const url = new URL(link.href, window.location.href);
-        const isSamePage = url.pathname === window.location.pathname && url.search === window.location.search;
-        const isExternal = url.origin !== window.location.origin;
-
-        if (event.ctrlKey || event.metaKey || link.target === '_blank' || isExternal || isSamePage) {
-            return;
-        }
 
         event.preventDefault();
         document.body.classList.add('page-leaving');
-        setTimeout(() => {
+
+        if (navigationTimer) {
+            clearTimeout(navigationTimer);
+        }
+
+        navigationTimer = setTimeout(() => {
             window.location.href = url.href;
+            navigationTimer = null;
         }, 220);
     });
 });

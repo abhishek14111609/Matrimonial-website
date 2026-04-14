@@ -1,7 +1,8 @@
 @extends('layouts.app')
 
 @section('title', 'SoulMatch Matrimony | Find Your Perfect Life Partner')
-@section('meta_description', 'Premium matrimony platform to discover verified brides and grooms for serious
+@section('meta_description',
+    'Premium matrimony platform to discover verified brides and grooms for serious
     relationships and marriage.')
 
 @section('content')
@@ -21,15 +22,15 @@
                 </div>
                 <div class="hero-stats">
                     <div>
-                        <h3 class="counter" data-target="15" data-suffix="L+">0</h3>
+                        <h3 class="counter" data-target="{{ $activeMembers }}" data-suffix="+">0</h3>
                         <p>Active Members</p>
                     </div>
                     <div>
-                        <h3 class="counter" data-target="3.2" data-suffix="L+">0</h3>
+                        <h3 class="counter" data-target="{{ $successStories }}" data-suffix="+">0</h3>
                         <p>Success Stories</p>
                     </div>
                     <div>
-                        <h3 class="counter" data-target="1200" data-suffix="+">0</h3>
+                        <h3 class="counter" data-target="{{ $cityCoverage }}" data-suffix="+">0</h3>
                         <p>City Coverage</p>
                     </div>
                 </div>
@@ -37,52 +38,44 @@
 
             <div class="search-panel reveal delay-1">
                 <h3>Start Your Search</h3>
-                <form class="search-form-grid">
-                    <div>
-                        <label>I am looking for</label>
-                        <select>
-                            <option>Bride</option>
-                            <option>Groom</option>
-                        </select>
-                    </div>
+                <form class="search-form-grid" action="{{ route('matches') }}" method="GET">
                     <div>
                         <label>Age</label>
                         <div class="inline-inputs">
-                            <input type="number" value="24">
+                            <input type="number" name="min_age" min="18" value="{{ request('min_age', 21) }}">
                             <span>to</span>
-                            <input type="number" value="31">
+                            <input type="number" name="max_age" min="18" value="{{ request('max_age', 35) }}">
                         </div>
                     </div>
                     <div>
-                        <label>Religion</label>
-                        <select>
-                            <option>Any</option>
-                            <option>Hindu</option>
-                            <option>Muslim</option>
-                            <option>Christian</option>
-                            <option>Sikh</option>
+                        <label>City</label>
+                        <select name="city">
+                            <option value="">Any</option>
+                            @foreach ($cityOptions as $city)
+                                <option value="{{ $city }}" @selected(request('city') === $city)>{{ $city }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
-                        <label>Mother Tongue</label>
-                        <select>
-                            <option>Any</option>
-                            <option>Hindi</option>
-                            <option>Bengali</option>
-                            <option>Marathi</option>
-                            <option>Tamil</option>
+                        <label>Education</label>
+                        <select name="education">
+                            <option value="">Any</option>
+                            @foreach ($educationOptions as $education)
+                                <option value="{{ $education }}" @selected(request('education') === $education)>{{ $education }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
-                        <label>Country</label>
-                        <select>
-                            <option>India</option>
-                            <option>United States</option>
-                            <option>United Kingdom</option>
-                            <option>Canada</option>
+                        <label>Sort By</label>
+                        <select name="sort">
+                            <option value="newest" @selected(request('sort') === 'newest')>Newest</option>
+                            <option value="age_asc" @selected(request('sort') === 'age_asc')>Age: Low to high</option>
+                            <option value="age_desc" @selected(request('sort') === 'age_desc')>Age: High to low</option>
                         </select>
                     </div>
-                    <button type="button" class="btn btn-primary full">Find Matches</button>
+                    <button type="submit" class="btn btn-primary full">Find Matches</button>
                 </form>
             </div>
         </div>
@@ -122,34 +115,34 @@
                 <h2>Featured Profiles</h2>
             </div>
             <div class="profile-grid">
-                @php
-                    $profiles = [
-                        ['name' => 'Aanya Sharma', 'age' => '27', 'city' => 'Pune', 'profession' => 'Product Designer'],
-                        [
-                            'name' => 'Rohan Mehta',
-                            'age' => '30',
-                            'city' => 'Ahmedabad',
-                            'profession' => 'Senior Consultant',
-                        ],
-                        [
-                            'name' => 'Nisha Verma',
-                            'age' => '26',
-                            'city' => 'Bengaluru',
-                            'profession' => 'Software Engineer',
-                        ],
-                        ['name' => 'Aditya Rao', 'age' => '29', 'city' => 'Hyderabad', 'profession' => 'Entrepreneur'],
-                    ];
-                @endphp
+                @forelse ($featuredProfiles as $i => $profile)
+                    <article class="profile-card featured-profile-card reveal delay-{{ $i % 3 }}">
+                        <a href="{{ route('profile', ['id' => $profile['id']]) }}" class="featured-profile-media">
+                            @if (!empty($profile['photo']))
+                                <img class="featured-profile-image" src="{{ $profile['photo'] }}"
+                                    alt="{{ $profile['name'] }}">
+                            @endif
+                            @if (empty($profile['photo']))
+                                <div class="featured-profile-fallback">{{ strtoupper(substr($profile['name'], 0, 1)) }}
+                                </div>
+                            @endif
 
-                @foreach ($profiles as $i => $profile)
-                    <article class="profile-card reveal delay-{{ $i % 3 }}">
-                        <div class="avatar">{{ strtoupper(substr($profile['name'], 0, 1)) }}</div>
-                        <h3>{{ $profile['name'] }}</h3>
-                        <p>{{ $profile['age'] }} yrs, {{ $profile['city'] }}</p>
-                        <p class="muted">{{ $profile['profession'] }}</p>
-                        <a href="{{ route('profile', ['id' => $i + 101]) }}" class="btn btn-outline full">View Profile</a>
+                            <div class="featured-profile-overlay">
+                                <h3>{{ $profile['name'] }}</h3>
+                                <p>{{ $profile['age'] ?? '-' }} yrs, {{ $profile['city'] ?? 'N/A' }}</p>
+                                <p>{{ $profile['profession'] ?? 'Profession not set' }}</p>
+                            </div>
+                        </a>
+
+                        <a href="{{ route('profile', ['id' => $profile['id']]) }}" class="btn btn-outline full">View
+                            Profile</a>
                     </article>
-                @endforeach
+                @empty
+                    <article class="profile-card">
+                        <h3>No profiles yet</h3>
+                        <p class="muted">New members will appear here once they register.</p>
+                    </article>
+                @endforelse
             </div>
         </div>
     </section>
