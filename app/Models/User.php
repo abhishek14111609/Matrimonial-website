@@ -36,6 +36,30 @@ use Illuminate\Notifications\Notifiable;
     'password',
 ])]
 #[Hidden(['password', 'remember_token'])]
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string|null $contact_no
+ * @property string|null $photo
+ * @property string|null $profession
+ * @property string|null $education
+ * @property \Illuminate\Support\Carbon|null $dob
+ * @property string|null $time_of_dob
+ * @property string|null $gender
+ * @property string|null $address
+ * @property string|null $city
+ * @property string|null $father_name
+ * @property string|null $father_occupation
+ * @property string|null $mother_name
+ * @property string|null $mother_occupation
+ * @property string|null $siblings
+ * @property string|null $maternal_relatives
+ * @property string|null $marital_status
+ * @property float|null $height
+ * @property float|null $weight
+ * @property string|null $about
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
