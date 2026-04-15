@@ -71,11 +71,20 @@ class HomeController extends Controller
             return null;
         }
 
-        if (filter_var($photo, FILTER_VALIDATE_URL)) {
-            return $photo;
-        }
+        $path = null;
 
-        $path = ltrim($photo, '/');
+        if (filter_var($photo, FILTER_VALIDATE_URL)) {
+            $urlHost = parse_url($photo, PHP_URL_HOST);
+            $appHost = parse_url((string) config('app.url'), PHP_URL_HOST);
+
+            if ($urlHost && $appHost && strcasecmp((string) $urlHost, (string) $appHost) === 0) {
+                $path = ltrim((string) parse_url($photo, PHP_URL_PATH), '/');
+            } else {
+                return $photo;
+            }
+        } else {
+            $path = ltrim($photo, '/');
+        }
 
         if (str_starts_with($path, 'storage/')) {
             $path = substr($path, 8);
