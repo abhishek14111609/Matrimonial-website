@@ -89,7 +89,7 @@ class MatchController extends Controller
                     'height' => $user->height,
                     'education' => $user->education,
                     'city' => $user->city,
-                    'photo_url' => $user->photo ? Storage::url($user->photo) : null,
+                    'photo_url' => $this->publicPhotoUrl($user->photo),
                     'is_wishlisted' => in_array($user->id, $wishedIds, true),
                 ];
             })
@@ -135,5 +135,28 @@ class MatchController extends Controller
             ->pluck('education')
             ->values()
             ->all();
+    }
+
+    private function publicPhotoUrl(?string $photo): ?string
+    {
+        if (! is_string($photo) || trim($photo) === '') {
+            return null;
+        }
+
+        if (filter_var($photo, FILTER_VALIDATE_URL)) {
+            return $photo;
+        }
+
+        $path = ltrim($photo, '/');
+
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, 8);
+        }
+
+        if (! Storage::disk('public')->exists($path)) {
+            return null;
+        }
+
+        return asset('storage/' . $path);
     }
 }

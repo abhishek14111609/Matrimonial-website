@@ -33,7 +33,7 @@ class HomeController extends Controller
                 'age' => $user->dob?->age,
                 'city' => $user->city,
                 'profession' => $user->profession,
-                'photo' => $user->photo ? Storage::url($user->photo) : null,
+                'photo' => $this->publicPhotoUrl($user->photo),
             ];
         })->all();
 
@@ -63,5 +63,28 @@ class HomeController extends Controller
             'cityOptions' => $cityOptions,
             'educationOptions' => $educationOptions,
         ]);
+    }
+
+    private function publicPhotoUrl(?string $photo): ?string
+    {
+        if (! is_string($photo) || trim($photo) === '') {
+            return null;
+        }
+
+        if (filter_var($photo, FILTER_VALIDATE_URL)) {
+            return $photo;
+        }
+
+        $path = ltrim($photo, '/');
+
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, 8);
+        }
+
+        if (! Storage::disk('public')->exists($path)) {
+            return null;
+        }
+
+        return asset('storage/' . $path);
     }
 }
