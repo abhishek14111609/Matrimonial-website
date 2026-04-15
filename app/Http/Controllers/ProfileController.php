@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -13,6 +14,7 @@ class ProfileController extends Controller
     {
         $user = User::findOrFail($id);
         $siblings = [];
+        $hidePhotos = app()->environment('production');
 
         /** @var User|null $member */
         $member = Auth::user();
@@ -32,7 +34,7 @@ class ProfileController extends Controller
             'id' => $user->id,
             'profile' => [
                 'name' => $user->name,
-                'photo' => $user->photo ? Storage::url($user->photo) : null,
+                'photo' => app()->environment('production') || ! $user->photo ? null : Storage::url($user->photo),
                 'age' => $user->dob?->age,
                 'location' => $user->city,
                 'profession' => $user->profession,
@@ -40,7 +42,7 @@ class ProfileController extends Controller
                 'height' => $user->height ? $user->height . ' cm' : null,
                 'education' => $user->education,
                 'contact_no' => $user->contact_no,
-                'dob' => $user->dob?->format('d M, Y'),
+                'dob' => $user->dob ? Carbon::parse($user->dob)->format('d M, Y') : null,
                 'time_of_dob' => $user->time_of_dob,
                 'gender' => ucfirst((string) $user->gender),
                 'address' => $user->address,

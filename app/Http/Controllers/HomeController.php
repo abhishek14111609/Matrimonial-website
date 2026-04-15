@@ -33,7 +33,7 @@ class HomeController extends Controller
                 'age' => $user->dob?->age,
                 'city' => $user->city,
                 'profession' => $user->profession,
-                'photo' => $user->photo ? Storage::url($user->photo) : null,
+                'photo' => app()->environment('production') || ! $user->photo ? null : Storage::url($user->photo),
             ];
         })->all();
 

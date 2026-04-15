@@ -89,7 +89,7 @@ class MatchController extends Controller
                     'height' => $user->height,
                     'education' => $user->education,
                     'city' => $user->city,
-                    'photo_url' => $user->photo ? Storage::url($user->photo) : null,
+                    'photo_url' => app()->environment('production') || ! $user->photo ? null : Storage::url($user->photo),
                     'is_wishlisted' => in_array($user->id, $wishedIds, true),
                 ];
             })
