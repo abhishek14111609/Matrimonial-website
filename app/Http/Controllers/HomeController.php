@@ -94,6 +94,6 @@ class HomeController extends Controller
             return null;
         }
 
-        return asset('storage/' . $path);
+        return url('media/profile/' . $path);
     }
 }

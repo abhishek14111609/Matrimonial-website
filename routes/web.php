@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationController;
@@ -12,6 +13,10 @@ use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('/media/profile/{path}', [MediaController::class, 'profilePhoto'])
+    ->where('path', '.*')
+    ->name('media.profile-photo');
 
 Route::get('/matches', [MatchController::class, 'index'])->name('matches');
 
