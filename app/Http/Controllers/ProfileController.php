@@ -14,7 +14,6 @@ class ProfileController extends Controller
     {
         $user = User::findOrFail($id);
         $siblings = [];
-        $hidePhotos = app()->environment('production');
 
         /** @var User|null $member */
         $member = Auth::user();
@@ -34,7 +33,7 @@ class ProfileController extends Controller
             'id' => $user->id,
             'profile' => [
                 'name' => $user->name,
-                'photo' => app()->environment('production') || ! $user->photo ? null : Storage::url($user->photo),
+                'photo' => $user->photo ? Storage::url($user->photo) : null,
                 'age' => $user->dob?->age,
                 'location' => $user->city,
                 'profession' => $user->profession,
